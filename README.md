@@ -2,6 +2,7 @@
 
 - stock AndroidAutoStub extracted from pixel
 - custom built Google Search App and Google Speech Services Stubs
+- *This does not include the config overlay and assumes you are setting config_systemAutomotiveProjection to com.google.android.projection.gearhead some other way.*
 
 ## Build (Generic AOSP)
 
@@ -11,13 +12,13 @@ add this to your manifests to use:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-	  <project name="SolidHal/android-auto-stub" path="prebuilts/androidauto" remote="github" revision="master" />
+	  <project name="sn-00-x/android-auto-stub" path="prebuilts/androidauto" remote="github" revision="master" />
 </manifest>
 ```
 
 then include the following line in your device.mk or common.mk:
 ```
-PRODUCT_PACKAGES += AndroidAuto gappsstub speechservicestub
+PRODUCT_PACKAGES += AndroidAutoStubPrebuilt gappsstub speechservicestub
 ```
 or you can also add it to your `vendor/$vendor/config/common.mk`
 
