@@ -1,58 +1,88 @@
-## AndroidAutoStub
+## Android Auto as user app on GrapheneOS with media apps support
 
-- stock AndroidAutoStub extracted from pixel
-- custom built Google Search App and Google Speech Services Stubs
-- *This does not include the config overlay and assumes you are setting config_systemAutomotiveProjection to com.google.android.projection.gearhead some other way.*
+This repository provides everything that is needed to add Android Auto support (with media apps support) to GrapheneOS (Android 13).
+The provided [patch](https://raw.githubusercontent.com/sn-00-x/android-auto/main/frameworks-base.patch) includes compatibility changes and makes it possible to e.g. watch Netflix on your car screen with the help of Screen2Auto while restricting it's permissions when not connected to a head unit.
+Furthermore the repo includes optional custom built Google Search App and Google Speech Services stubs.
 
-## Build (Generic AOSP)
+The patch itself does not rely on GrapheneOS, so it should be possible to also make this work on a different OS with slight modifications.
 
-*This assumes you already are getting microg on your device some other way.* 
+To make this run, you need to build your own rom. If you are instead looking for a simpler method to run Android Auto (that involves rooting your device), have a look at [aa4mg](https://github.com/sn-00-x/aa4mg)
 
-add this to your manifests to use:
+## Build
+
+- Set up your build environment according to the official [GrapheneOS build instructions](https://grapheneos.org/build), sync sources (the patch is based on [this release](https://grapheneos.org/releases#2023080800)) and proprietary files.
+- clone this repo into vendor/android-auto:
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-	  <project name="sn-00-x/android-auto-stub" path="prebuilts/androidauto" remote="github" revision="master" />
-</manifest>
+cd vendor
+git clone https://github.com/sn-00-x/android-auto.git
 ```
-
-then include the following line in your device.mk or common.mk:
+- Apply the patch in root directory:
 ```
-PRODUCT_PACKAGES += AndroidAutoStubPrebuilt gappsstub speechservicestub
+cd ..
+patch -p1 < vendor/android-auto/frameworks-base.patch
 ```
-or you can also add it to your `vendor/$vendor/config/common.mk`
+- To use the Google Search App and Google Speech Services stubs, add the following line `device/google/$device/device-$device.mk`:
+```
+PRODUCT_PACKAGES += gappsstub speechservicestub
+```
+- If you want to use Screen2Auto, you need to set it's package name and the sha256 hash of your signing cert in `frameworks/base/core/java/android/app/compat/sn00x/AndroidAutoHelper.java` ( PACKAGE_SCREEN2AUTO and SIGNATURES_SCREEN2AUTO in line 54ff). See [Install Screen2Auto](#install-screen2auto) section below.
+- To be able to play content protected by DRM, such as Netflix, the device must be missing liboemcrypto.so. Therefor search and comment out the following section in `vendor/google_devices/$device/proprietary/Android.bp`
+```
+/*
+cc_prebuilt_library_shared {
+    name: "liboemcrypto",
+    owner: "google_devices",
+    target: { android_arm64: { srcs: [ "vendor/lib64/liboemcrypto.so" ] } },
+    compile_multilib: "64",
+    check_elf_files: false,
+    prefer: true,
+    strip: { none: true },
+    soc_specific: true,
+}
+*/
+```
+  Note that without liboemcrypto.so Widevine DRM will fall back to using L3 and Netflix will only stream in SD, but at least can be mirrored to the head unit.
+- Continue the build process described in [GrapheneOS build instructions](https://grapheneos.org/build)
 
-Now continue to "Get android auto setup" below
+## Get Android Auto and Google Maps
 
-## Build lineageOS with Android Auto
+- Be sure to get Android Auto and Maps with correct signatures. When downloading directly from PlayStore (without having preinstalled stubs on your system), the apps may be provided with other signatures. However, those may checked and rejected when connecting to a car.
+  Android Auto must be signed with eeb557fc154afc0d8eec621bdc7ea950 / 9ca91f9e704d630ef67a23f52bf1577a92b9ca5d. Get it e.g. [here](https://www.apkmirror.com/apk/google-inc/android-auto/android-auto-10-2-6332-release/android-auto-10-2-633224-release-android-apk-download/)
+  Google Maps must be signed with 38918a453d07199354f8b19af05ec6562ced5788 / f0fd6c5b410f25cb25c3b53346c8972fae30f8ee7411df910480ad6b2d60db83. Get it e.g. [here](https://www.apkmirror.com/apk/google-inc/maps/maps-11-93-0307-release/google-maps-11-93-0307-android-apk-download/)
+- Go to phone settings and grant "nearby devices" permission to Android Auto
+- Connect to car, follow instructions
+- In case your device says there is no app to handle the connection, reboot and try again.
+- When an error regarding restricted settings is shown, go to phone settings -> Apps -> Android Auto -> click the three dots in the upper right corner -> Allow restricted settings
+- Continue setting up android auto
+- In case you run in any problems, replug device
 
-*this method will include microg and Android Auto and the stubs automatically in your build*
+## Install Screen2Auto
 
-I suggest using https://github.com/lineageos4microg/docker-lineage-cicd
+Screen2Auto 3.7 can be obtained from https://inceptive.ru/projects/s2a/download
 
-see the following repo for an example device:
-https://github.com/SolidHal/lineageos-microg-oneplus-lemonade
+However Google has blacklisted Screen2Auto (after all it circumvents security restrictions of Android Auto).
+So you need to find a way to rename the package and sign it with your own cert. I will neither provide a renamed package nor provide any information on how to do this. I don't want Google to blacklist the version I use or change the way they blacklist apps.
 
-Now continue to "Get android auto setup" below
+Assuming you have a renamed version of Screen2Auto, install it and only grant "System settings recording" when asked for permissions. Screen2Auto needs this permission to modify system settings to be able to e.g. rotate the screen. Leave the other permissions untouched. The patch in this repo handles granting "display over other apps" permission to Screen2Auto only while connected to a head unit.
 
-## Get android auto setup
+Make the following changes in Screen2Auto:
+- Touch button settings -> Set Double tab to "Launcher"
+- Other settings -> Enable "Alternative touch" (but click cancel when asked for enabling Accessibility Service)
 
-- Install the latest android auto apk (you can find this online or get it with aurora store)
-- Install google maps in the same way
-- open google maps once, grant it location permissions. Just while in use is fine.
-- android auto *should* just work now
-
-if you get stuck on google maps permission, try pressing cancel instead of settings.
-
-if you are having trouble with first time setup, I found it was helpful to setup the bluetooth connection to the car before plugging in the usb c.
-
+If touch does not work for you correctly, try to select another profile under Other settings -> Alternative touch
 
 ## Sources
 
 sources for custom built stubs with build instructions for each of the stubs:
+
 https://github.com/SolidHal/SpeechServices-Package-Spoof
+
 https://github.com/SolidHal/Gapp-Package-Spoof
 
 ## Thanks
-big thanks to @dylangerdaly and the thread here https://github.com/microg/GmsCore/issues/897
+big thanks to everyone involved in the thread here https://github.com/microg/GmsCore/issues/897
+
+https://github.com/VarunS2002/Xposed-Disable-FLAG_SECURE
+
+https://github.com/Magisk-Modules-Repo/liboemcryptodisabler
 
