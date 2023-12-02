@@ -1,8 +1,8 @@
-## Android Auto as user app with media apps support
+## Android Auto as user app with media apps support on GrapheneOS / Android 13
 
 This repository provides everything that is needed to add Android Auto support (with media apps support) to GrapheneOS (Android 13). However, the patch itself does not rely on GrapheneOS, so it should be possible to make this work on a different OS with slight modifications.
 
-The provided [patch](https://raw.githubusercontent.com/sn-00-x/android-auto/main/frameworks-base.patch) includes compatibility changes and makes it possible to e.g. watch Netflix on your car screen with the help of Screen2Auto while restricting it's permissions when not connected to a head unit.
+The provided [patch](https://raw.githubusercontent.com/sn-00-x/android-auto-android13/main/frameworks-base.patch) includes compatibility changes and makes it possible to e.g. watch Netflix on your car screen with the help of Screen2Auto while restricting it's permissions when not connected to a head unit.
 Furthermore the repo includes optional custom built Google Search App and Google Speech Services stubs.
 
 To make this run, you need to build your own rom. If you are instead looking for a simpler method to run Android Auto (that involves rooting your device), have a look at [aa4mg](https://github.com/sn-00-x/aa4mg)
@@ -13,7 +13,7 @@ To make this run, you need to build your own rom. If you are instead looking for
 - clone this repo into vendor/android-auto:
 ```
 cd vendor
-git clone https://github.com/sn-00-x/android-auto.git
+git clone https://github.com/sn-00-x/android-auto-android13.git
 ```
 - Apply the patch in root directory:
 ```
@@ -84,4 +84,3 @@ big thanks to everyone involved in the thread here https://github.com/microg/Gms
 https://github.com/VarunS2002/Xposed-Disable-FLAG_SECURE
 
 https://github.com/Magisk-Modules-Repo/liboemcryptodisabler
-
