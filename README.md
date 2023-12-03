@@ -1,6 +1,6 @@
 ## Android Auto as user app with media apps support on GrapheneOS / Android 13
 
-This repository provides everything that is needed to add Android Auto support (with media apps support) to GrapheneOS (Android 13). However, the patch itself does not rely on GrapheneOS, so it should be possible to make this work on a different OS with slight modifications.
+This repository provides everything that is needed to add Android Auto support (with media apps support) to GrapheneOS (Android 13). However, the patch itself does not rely on GrapheneOS, so it should be possible to make this work on a different OS with slight modifications. **If you are looking for an Android 14 patch, see [here](https://github.com/sn-00-x/android-auto).**
 
 The provided [patch](https://raw.githubusercontent.com/sn-00-x/android-auto-android13/main/frameworks-base.patch) includes compatibility changes and makes it possible to e.g. watch Netflix on your car screen with the help of Screen2Auto while restricting it's permissions when not connected to a head unit.
 Furthermore the repo includes optional custom built Google Search App and Google Speech Services stubs.
